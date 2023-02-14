@@ -3,6 +3,7 @@ set(strucclustutils_source_files
         strucclustutils/aln2tmscore.cpp
         strucclustutils/structcreatedb.cpp
         strucclustutils/structurealign.cpp
+        strucclustutils/rescorebacktrace.cpp
         strucclustutils/samplemulambda.cpp
         strucclustutils/structureconvertalis.cpp
         strucclustutils/structureto3didescriptor.cpp

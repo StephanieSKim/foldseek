@@ -34,7 +34,14 @@ if [ ! -e "${TMP_PATH}/resBA.dbtype" ]; then
     "$MMSEQS" search "${B_DB}" "${A_DB}" "${TMP_PATH}/resBA" "${TMP_PATH}/tempBA" ${SEARCH_B_A_PAR} \
         || fail "search B vs. A died"
 fi
-
+if [ ! -e "${TMP_PATH}/resAB_rescored.dbtype" ]; then
+      # shellcheck disable=SC2086
+    "$MMSEQS" rescorebacktrace "${A_DB}" "${B_DB}" "${TMP_PATH}/resAB" "${TMP_PATH}/resAB_rescored"
+fi
+if [ ! -e "${TMP_PATH}/resBA_rescored.dbtype" ]; then
+      # shellcheck disable=SC2086
+  "$MMSEQS" rescorebacktrace "${B_DB}" "${A_DB}" "${TMP_PATH}/resBA" "${TMP_PATH}/resBA_rescored"
+fi
 # sort A->B by decreasing bitscores:
 if [ ! -e "${TMP_PATH}/resAB_sorted.dbtype" ]; then
     # shellcheck disable=SC2086
