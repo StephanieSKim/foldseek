@@ -87,6 +87,10 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
             Matcher::readAlignmentResults(alignments, data, false);
             size_t queryKey = resultReader.getDbKey(id);
 
+            char dbKeyBuffer[255 + 1];
+            Util::parseKey(data, dbKeyBuffer);
+            const unsigned int dbKey = (unsigned int) strtoul(dbKeyBuffer, NULL, 10);
+
             unsigned int queryId = qdbr3Di.sequenceReader->getId(queryKey);
             char *querySeqAA = qdbrAA.sequenceReader->getData(queryId, thread_idx);
             char *querySeq3Di = qdbr3Di.sequenceReader->getData(queryId, thread_idx);
@@ -101,9 +105,6 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
             gapExtend = par.gapExtend.values.aminoacid();
 
             for(size_t alnIdx = 0; alnIdx < alignments.size(); alnIdx++){
-                char dbKeyBuffer[255 + 1];
-                Util::parseKey(data, dbKeyBuffer);
-                const unsigned int dbKey = (unsigned int) strtoul(dbKeyBuffer, NULL, 10);
 
                 unsigned int targetId = t3DiDbr->sequenceReader->getId(dbKey);
                 char * targetSeq3Di = t3DiDbr->sequenceReader->getData(targetId, thread_idx);
