@@ -87,12 +87,15 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
             Matcher::readAlignmentResults(alignments, data, false);
             size_t queryKey = resultReader.getDbKey(id);
 
-            unsigned int queryId = qdbr3Di.sequenceReader->getId(queryKey);
-            char *querySeqAA = qdbrAA.sequenceReader->getData(queryId, thread_idx);
-            char *querySeq3Di = qdbr3Di.sequenceReader->getData(queryId, thread_idx);
-            unsigned int querySeqLen = qdbr3Di.sequenceReader->getSeqLen(queryId);
-            qSeq3Di.mapSequence(id, queryKey, querySeq3Di, querySeqLen);
-            qSeqAA.mapSequence(id, queryKey, querySeqAA, querySeqLen);
+            unsigned int queryId3Di = qdbr3Di.sequenceReader->getId(queryKey);
+            unsigned int queryIdAA = qdbrAA.sequenceReader->getId(queryKey);
+            char *querySeqAA = qdbrAA.sequenceReader->getData(queryIdAA, thread_idx);
+            char *querySeq3Di = qdbr3Di.sequenceReader->getData(queryId3Di, thread_idx);
+            unsigned int querySeqLen3Di = qdbr3Di.sequenceReader->getSeqLen(queryId3Di);
+            unsigned int querySeqLenAA = qdbrAA.sequenceReader->getSeqLen(queryIdAA);
+
+            qSeq3Di.mapSequence(queryId3Di, queryKey, querySeq3Di, querySeqLen3Di);
+            qSeqAA.mapSequence(queryIdAA, queryKey, querySeqAA, querySeqLenAA);
 
             int gapOpen, gapExtend;
             unsigned int gapIcount, gapDcount;
@@ -103,16 +106,19 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
             for(size_t alnIdx = 0; alnIdx < alignments.size(); alnIdx++){
                 char dbKeyBuffer[255 + 1];
                 Util::parseKey(data, dbKeyBuffer);
-                data = Util::skipLine(data);
+                //data = Util::skipLine(data);
                 const unsigned int dbKey = (unsigned int) strtoul(dbKeyBuffer, NULL, 10);
-                unsigned int targetId = t3DiDbr->sequenceReader->getId(dbKey);
+                unsigned int targetId3Di = t3DiDbr->sequenceReader->getId(dbKey);
+                unsigned int targetIdAA = tAADbr->sequenceReader->getId(dbKey);
                 //const bool isIdentity = (queryId == targetId && (par.includeIdentity || sameDB))? true : false;
 
-                char * targetSeq3Di = t3DiDbr->sequenceReader->getData(targetId, thread_idx);
-                char * targetSeqAA = tAADbr->sequenceReader->getData(targetId, thread_idx);
-                const int targetSeqLen = static_cast<int>(t3DiDbr->sequenceReader->getSeqLen(targetId));
-                tSeq3Di.mapSequence(targetId, dbKey, targetSeq3Di, targetSeqLen);
-                tSeqAA.mapSequence(targetId, dbKey, targetSeqAA, targetSeqLen);
+                char * targetSeq3Di = t3DiDbr->sequenceReader->getData(targetId3Di, thread_idx);
+                char * targetSeqAA = tAADbr->sequenceReader->getData(targetIdAA, thread_idx);
+                const int targetSeqLen3Di = static_cast<int>(t3DiDbr->sequenceReader->getSeqLen(targetId3Di));
+                const int targetSeqLenAA = static_cast<int>(tAADbr->sequenceReader->getSeqLen(targetIdAA));
+
+                tSeq3Di.mapSequence(targetId3Di, dbKey, targetSeq3Di, targetSeqLen3Di);
+                tSeqAA.mapSequence(targetIdAA, dbKey, targetSeqAA, targetSeqLenAA);
 
                 rescore = 0;
 
