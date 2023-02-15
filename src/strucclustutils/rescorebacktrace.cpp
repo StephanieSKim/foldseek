@@ -87,10 +87,6 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
             Matcher::readAlignmentResults(alignments, data, false);
             size_t queryKey = resultReader.getDbKey(id);
 
-            char dbKeyBuffer[255 + 1];
-            Util::parseKey(data, dbKeyBuffer);
-            const unsigned int dbKey = (unsigned int) strtoul(dbKeyBuffer, NULL, 10);
-
             unsigned int queryId = qdbr3Di.sequenceReader->getId(queryKey);
             char *querySeqAA = qdbrAA.sequenceReader->getData(queryId, thread_idx);
             char *querySeq3Di = qdbr3Di.sequenceReader->getData(queryId, thread_idx);
@@ -105,8 +101,13 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
             gapExtend = par.gapExtend.values.aminoacid();
 
             for(size_t alnIdx = 0; alnIdx < alignments.size(); alnIdx++){
-
+                char dbKeyBuffer[255 + 1];
+                Util::parseKey(data, dbKeyBuffer);
+                data = Util::skipLine(data);
+                const unsigned int dbKey = (unsigned int) strtoul(dbKeyBuffer, NULL, 10);
                 unsigned int targetId = t3DiDbr->sequenceReader->getId(dbKey);
+                //const bool isIdentity = (queryId == targetId && (par.includeIdentity || sameDB))? true : false;
+
                 char * targetSeq3Di = t3DiDbr->sequenceReader->getData(targetId, thread_idx);
                 char * targetSeqAA = tAADbr->sequenceReader->getData(targetId, thread_idx);
                 const int targetSeqLen = static_cast<int>(t3DiDbr->sequenceReader->getSeqLen(targetId));
@@ -119,7 +120,6 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
                 int dbpos = isdigit(alignments[alnIdx].dbStartPos);
 
                 for(size_t  j = 0; j < alignments[alnIdx].backtrace.size(); j++){
-
 
                     //if match add 3Di and AA score as rescore value
                     char qAALetter = qSeqAA.numSequence[qpos];
