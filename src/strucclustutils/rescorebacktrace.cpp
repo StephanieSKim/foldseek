@@ -104,10 +104,8 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
             gapExtend = par.gapExtend.values.aminoacid();
 
             for(size_t alnIdx = 0; alnIdx < alignments.size(); alnIdx++){
-                char dbKeyBuffer[255 + 1];
-                Util::parseKey(data, dbKeyBuffer);
                 //data = Util::skipLine(data);
-                const unsigned int dbKey = (unsigned int) strtoul(dbKeyBuffer, NULL, 10);
+                const unsigned int dbKey = alignments[alnIdx].dbKey;
                 unsigned int targetId3Di = t3DiDbr->sequenceReader->getId(dbKey);
                 unsigned int targetIdAA = tAADbr->sequenceReader->getId(dbKey);
                 //const bool isIdentity = (queryId == targetId && (par.includeIdentity || sameDB))? true : false;
