@@ -45,7 +45,7 @@ fi
 # sort A->B by decreasing bitscores:
 if [ ! -e "${TMP_PATH}/resAB_sorted.dbtype" ]; then
     # shellcheck disable=SC2086
-    "$MMSEQS" filterdb "${TMP_PATH}/resAB" "${TMP_PATH}/resAB_sorted" --sort-entries 2 --filter-column 2 ${THREADS_COMP_PAR} \
+    "$MMSEQS" filterdb "${TMP_PATH}/resAB_rescored" "${TMP_PATH}/resAB_sorted" --sort-entries 2 --filter-column 2 ${THREADS_COMP_PAR} \
         || fail "sort resAB by bitscore died"
 fi
 
@@ -59,7 +59,7 @@ fi
 # extract best hit(s) in B->A direction:
 if [ ! -e "${TMP_PATH}/resB_best_A.dbtype" ]; then
     # shellcheck disable=SC2086
-    "$MMSEQS" filterdb "${TMP_PATH}/resBA" "${TMP_PATH}/resB_best_A" --beats-first --filter-column 2 --comparison-operator e ${THREADS_COMP_PAR} \
+    "$MMSEQS" filterdb "${TMP_PATH}/resBA_rescored" "${TMP_PATH}/resB_best_A" --beats-first --filter-column 2 --comparison-operator e ${THREADS_COMP_PAR} \
         || fail "extract B best A died"
 fi
 
@@ -105,6 +105,10 @@ if [ -n "$REMOVE_TMP" ]; then
     "$MMSEQS" rmdb "${TMP_PATH}/resAB" ${VERBOSITY}
     # shellcheck disable=SC2086
     "$MMSEQS" rmdb "${TMP_PATH}/resBA" ${VERBOSITY}
+    # shellcheck disable=SC2086
+    "$MMSEQS" rmdb "${TMP_PATH}/resAB_rescored" ${VERBOSITY}
+    # shellcheck disable=SC2086
+    "$MMSEQS" rmdb "${TMP_PATH}/resBA_rescored" ${VERBOSITY}
     # shellcheck disable=SC2086
     "$MMSEQS" rmdb "${TMP_PATH}/resA_best_B" ${VERBOSITY}
     # shellcheck disable=SC2086
