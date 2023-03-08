@@ -79,6 +79,8 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
 
         std::vector<Matcher::result_t> alignments;
 
+        int current_alnIdx=0;
+
 #pragma omp for schedule(dynamic, 1)
         for (size_t id = 0; id < resultReader.getSize(); id++) {
             progress.updateProgress();
@@ -103,7 +105,7 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
             gapOpen = par.gapOpen.values.aminoacid();
             gapExtend = par.gapExtend.values.aminoacid();
 
-            for(size_t alnIdx = 0; alnIdx < alignments.size(); alnIdx++){
+            for(size_t alnIdx = current_alnIdx; alnIdx < alignments.size(); alnIdx++){
                 //data = Util::skipLine(data);
                 const unsigned int dbKey = alignments[alnIdx].dbKey;
                 unsigned int targetId3Di = t3DiDbr->sequenceReader->getId(dbKey);
@@ -120,8 +122,8 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
 
                 rescore = 0;
 
-                int qpos = isdigit(alignments[alnIdx].qStartPos);
-                int dbpos = isdigit(alignments[alnIdx].dbStartPos);
+                int qpos = alignments[alnIdx].qStartPos;
+                int dbpos = alignments[alnIdx].dbStartPos;
 
                 for(size_t  j = 0; j < alignments[alnIdx].backtrace.size(); j++){
 
@@ -142,15 +144,15 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
                             gapIcount = 0;
                             gapScore = (gapDcount == 0) ? gapOpen : gapExtend;
                             rescore += gapScore;
-                            gapDcount += 1;
-                            qpos++;
+                            gapDcount++;
+                            dbpos++;
                             break;
                         case 'I':
                             gapDcount = 0;
                             gapScore = (gapIcount == 0) ? gapOpen : gapExtend;
                             rescore += gapScore;
-                            gapIcount += 1;
-                            dbpos++;
+                            gapIcount++;
+                            qpos++;
                             break;
                     }
                 }
@@ -158,11 +160,11 @@ int rescorebacktrace(int argc, const char **argv, const Command& command) {
                 alignments[alnIdx].score = rescore;
                 size_t len = Matcher::resultToBuffer(buffer, alignments[alnIdx], par.addBacktrace);
                 resultBuffer.append(buffer, len);
-
-                dbw.writeData(resultBuffer.c_str(), resultBuffer.length(), queryKey, thread_idx);
-                resultBuffer.clear();
-                alignmentResult.clear();
+                current_alnIdx++;
             }
+            dbw.writeData(resultBuffer.c_str(), resultBuffer.length(), queryKey, thread_idx);
+            resultBuffer.clear();
+            alignmentResult.clear();
         }
     }
 

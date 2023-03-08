@@ -36,11 +36,11 @@ if [ ! -e "${TMP_PATH}/resBA.dbtype" ]; then
 fi
 if [ ! -e "${TMP_PATH}/resAB_rescored.dbtype" ]; then
       # shellcheck disable=SC2086
-    "$MMSEQS" rescorebacktrace "${A_DB}" "${B_DB}" "${TMP_PATH}/resAB" "${TMP_PATH}/resAB_rescored"
+    "$MMSEQS" rescorebacktrace "${A_DB}" "${B_DB}" "${TMP_PATH}/resAB" "${TMP_PATH}/resAB_rescored" ${THREADS_COMP_PAR}
 fi
 if [ ! -e "${TMP_PATH}/resBA_rescored.dbtype" ]; then
       # shellcheck disable=SC2086
-  "$MMSEQS" rescorebacktrace "${B_DB}" "${A_DB}" "${TMP_PATH}/resBA" "${TMP_PATH}/resBA_rescored"
+  "$MMSEQS" rescorebacktrace "${B_DB}" "${A_DB}" "${TMP_PATH}/resBA" "${TMP_PATH}/resBA_rescored" ${THREADS_COMP_PAR}
 fi
 # sort A->B by decreasing bitscores:
 if [ ! -e "${TMP_PATH}/resAB_sorted.dbtype" ]; then
