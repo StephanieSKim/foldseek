@@ -159,7 +159,7 @@ std::vector<struct Command> commands = {
                                           {"targetDB", DbType::ACCESS_MODE_INPUT, DbType::NEED_DATA, &DbValidator::sequenceDb },
                                           {"resultDB", DbType::ACCESS_MODE_INPUT, DbType::NEED_DATA, &DbValidator::resultDb },
                                           {"alignmentDB", DbType::ACCESS_MODE_OUTPUT, DbType::NEED_DATA, &DbValidator::alignmentDb }}},
-        {"rescorebacktrace",     rescorebacktrace,       &localPar.threadsandcompression,      COMMAND_ALIGNMENT,
+        {"rescorebacktrace",     rescorebacktrace,       &localPar.structurealign,      COMMAND_ALIGNMENT,
                 "Rescore the backtrace for an alignment",
                 NULL,
                 "Stephanie S. Kim <stepkim92@gmail.com> & Martin Steinegger <martin.steinegger@snu.ac.kr>",

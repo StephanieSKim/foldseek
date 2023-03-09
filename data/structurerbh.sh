@@ -36,23 +36,17 @@ if [ ! -e "${TMP_PATH}/resBA.dbtype" ]; then
 fi
 if [ ! -e "${TMP_PATH}/resAB_rescored.dbtype" ]; then
       # shellcheck disable=SC2086
-    "$MMSEQS" rescorebacktrace "${A_DB}" "${B_DB}" "${TMP_PATH}/resAB" "${TMP_PATH}/resAB_rescored" ${THREADS_COMP_PAR}
+    "$MMSEQS" rescorebacktrace "${A_DB}" "${B_DB}" "${TMP_PATH}/resAB" "${TMP_PATH}/resAB_rescored" ${THREADS_COMP_PAR} -a
 fi
 if [ ! -e "${TMP_PATH}/resBA_rescored.dbtype" ]; then
       # shellcheck disable=SC2086
-  "$MMSEQS" rescorebacktrace "${B_DB}" "${A_DB}" "${TMP_PATH}/resBA" "${TMP_PATH}/resBA_rescored" ${THREADS_COMP_PAR}
-fi
-# sort A->B by decreasing bitscores:
-if [ ! -e "${TMP_PATH}/resAB_sorted.dbtype" ]; then
-    # shellcheck disable=SC2086
-    "$MMSEQS" filterdb "${TMP_PATH}/resAB_rescored" "${TMP_PATH}/resAB_sorted" --sort-entries 2 --filter-column 2 ${THREADS_COMP_PAR} \
-        || fail "sort resAB by bitscore died"
+  "$MMSEQS" rescorebacktrace "${B_DB}" "${A_DB}" "${TMP_PATH}/resBA" "${TMP_PATH}/resBA_rescored" ${THREADS_COMP_PAR} -a
 fi
 
 # extract a single best hit in A->B direction (used to take best bitscore for A):
 if [ ! -e "${TMP_PATH}/resA_best_B.dbtype" ]; then
     # shellcheck disable=SC2086
-    "$MMSEQS" filterdb "${TMP_PATH}/resAB_sorted" "${TMP_PATH}/resA_best_B" --extract-lines 1 ${THREADS_COMP_PAR} \
+    "$MMSEQS" filterdb "${TMP_PATH}/resAB_rescored" "${TMP_PATH}/resA_best_B" --extract-lines 1 ${THREADS_COMP_PAR} \
         || fail "extract A best B died"
 fi
 
@@ -77,24 +71,10 @@ if [ ! -e "${TMP_PATH}/res_best_merged.dbtype" ]; then
         || fail "merge best hits died"
 fi
 
-# sort by bitscore (decreasing order):
-if [ ! -e "${TMP_PATH}/res_best_merged_sorted.dbtype" ]; then
-    # shellcheck disable=SC2086
-    "$MMSEQS" filterdb "${TMP_PATH}/res_best_merged" "${TMP_PATH}/res_best_merged_sorted" --sort-entries 2 --filter-column 2 ${THREADS_COMP_PAR} \
-        || fail "sort by bitscore died"
-fi
-
-# sort by bitscore (decreasing order):
-if [ ! -e "${TMP_PATH}/res_best_merged_sorted_aln.dbtype" ]; then
-    # shellcheck disable=SC2086
-    "$MMSEQS" ${ALIGNMENT_ALGO} "${A_DB}" "${B_DB}" "${TMP_PATH}/res_best_merged_sorted" "${TMP_PATH}/res_best_merged_sorted_aln" ${ALIGNMENT_PAR} \
-        || fail "align died"
-fi
-
 # identify the RBH pairs and write them to a result db:
 if [ ! -e "${RBH_RES}.dbtype" ]; then
     # shellcheck disable=SC2086
-    "$MMSEQS" result2rbh "${TMP_PATH}/res_best_merged_sorted_aln" "${RBH_RES}" ${THREADS_COMP_PAR} \
+    "$MMSEQS" result2rbh "${TMP_PATH}/res_best_merged" "${RBH_RES}" ${THREADS_COMP_PAR} \
         || fail "result2rbh died"
 fi
 
@@ -119,8 +99,6 @@ if [ -n "$REMOVE_TMP" ]; then
     "$MMSEQS" rmdb "${TMP_PATH}/resB_best_A_swap" ${VERBOSITY}
     # shellcheck disable=SC2086
     "$MMSEQS" rmdb "${TMP_PATH}/res_best_merged_sorted" ${VERBOSITY}
-    # shellcheck disable=SC2086
-    "$MMSEQS" rmdb "${TMP_PATH}/res_best_merged_sorted_aln" ${VERBOSITY}
     # shellcheck disable=SC2086
     "$MMSEQS" rmdb "${TMP_PATH}/res_best_merged" ${VERBOSITY}
     rm -f "${TMP_PATH}/rbh.sh"
