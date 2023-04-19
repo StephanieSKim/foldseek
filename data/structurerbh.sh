@@ -25,15 +25,30 @@ TMP_PATH="$4"
 # search in both directions:
 if [ ! -e "${TMP_PATH}/resAB.dbtype" ]; then
     # shellcheck disable=SC2086
-    "$MMSEQS" search "${A_DB}" "${B_DB}" "${TMP_PATH}/resAB" "${TMP_PATH}/tempAB" ${SEARCH_A_B_PAR} \
+    "$MMSEQS" search "${A_DB}" "${B_DB}" "${TMP_PATH}/resAB" "${TMP_PATH}/tempAB" --min-seq-id 0 -c 0 --cov-mode 0 --max-rejected 2147483647 --max-accept 2147483647 -a 1 --add-self-matches 0 --tmscore-threshold 0 --tmalign-hit-order 0 --tmalign-fast 1 --db-load-mode 0 --threads 16 -v 3 --lddt-threshold 0 --sort-by-structure-bits 0 --sub-mat 'aa:3di.out,nucl:3di.out' --alignment-mode 3 --alignment-output-mode 0 --wrapped-scoring 0 -e 10 --min-aln-len 0 --seq-id-mode 0 --alt-ali 0 --max-seq-len 65535 --comp-bias-corr 0 --comp-bias-corr-scale 1 --pca substitution:1.100,context:1.400 --pcb substitution:4.100,context:5.800 --score-bias 0 --realign 0 --realign-score-bias -0.2 --realign-max-seqs 2147483647 --corr-score-weight 0 --gap-open aa:10,nucl:10 --gap-extend aa:1,nucl:1 --zdrop 40 --compressed 0 --seed-sub-mat 'aa:3di.out,nucl:3di.out' -s 9.5 -k 0 --k-score seq:2147483647,prof:2147483647 --alph-size aa:21,nucl:5 --max-seqs 1000 --split 0 --split-mode 2 --split-memory-limit 0 --diag-score 1 --exact-kmer-matching 0 --mask 0 --mask-prob 0.99995 --mask-lower-case 1 --min-ungapped-score 15 --spaced-kmer-mode 1 --exhaustive-search 0 --num-iterations 1 --alignment-type 2 --remove-tmp-files 0 --force-reuse 0 \
         || fail "search A vs. B died"
 fi
 
-if [ ! -e "${TMP_PATH}/resBA.dbtype" ]; then
+# swap the direction of resBA::
+if [ ! -e "${TMP_PATH}/resBA_swap.dbtype" ]; then
     # shellcheck disable=SC2086
-    "$MMSEQS" search "${B_DB}" "${A_DB}" "${TMP_PATH}/resBA" "${TMP_PATH}/tempBA" ${SEARCH_B_A_PAR} \
-        || fail "search B vs. A died"
+    "$MMSEQS" swapresults "${A_DB}" "${B_DB}" "${TMP_PATH}/tempAB/latest/pref" "${TMP_PATH}/prefBA" ${THREADS_COMP_PAR} -e inf \
+        || fail "swap B prefilter A died"
 fi
+
+# structalign resBA:
+if [ ! -e "${TMP_PATH}/resBA.dbtype" ]; then
+    "$MMSEQS" structurealign "${B_DB}" "${A_DB}"  "${TMP_PATH}/prefBA" "${TMP_PATH}/resBA" --threads 16 -a \
+       || fail "align died"
+fi
+
+#if [ ! -e "${TMP_PATH}/resBA.dbtype" ]; then
+#    # shellcheck disable=SC2086
+#    "$MMSEQS" search "${B_DB}" "${A_DB}" "${TMP_PATH}/resBA" "${TMP_PATH}/tempBA" ${SEARCH_B_A_PAR} \
+#        || fail "search B vs. A died"
+#fi
+
+
 if [ ! -e "${TMP_PATH}/resAB_rescored.dbtype" ]; then
       # shellcheck disable=SC2086
     "$MMSEQS" rescorebacktrace "${A_DB}" "${B_DB}" "${TMP_PATH}/resAB" "${TMP_PATH}/resAB_rescored" ${THREADS_COMP_PAR} -a
